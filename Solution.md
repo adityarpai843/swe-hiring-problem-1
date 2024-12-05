@@ -1,15 +1,14 @@
 # Solution 
 
-1. The solution i'm building here is a CLI tool that runs in background which uses REST API built by interns. 
-
-2. Ideal solution would be to save directly to PG DB with timestamp 
+1. The solution i'm building here is a CLI tool that runs in background which uses REST API built by interns.I'm saving directly to PG. 
 
 3. Ideal solution would be to have support sign in using google and save sqlite.db and sync across sign in's. This makes us not needing take care of webserver on our own.
 
 
 4. CLI Tool internals
-- Detect OS (if linux/mac show linux terminal commands else powershell)
-- Upon start append history if there is history newer than current history(Check is performed using timestamp).
+- Detect terminal (if linux/mac show linux terminal commands else powershell)
+- Upon start append history if there is history newer than current history.
+- Performs diff to know whether anything new is present.
 
 ## Components in Solution
 
@@ -17,10 +16,11 @@
 2. REST API
 3. DB
 
-## CLI Tool
+## CLI Tool (current support for bash and zsh)
 
-
-
+1. CLI tool watches history file of bash/zsh if there is a change then it is pushed via API to PG.
+2. Push to DB takes place if there is a new command.
+ 
 
 ## REST API
 
@@ -35,6 +35,5 @@ Prepared based on doc prepared by interns
 ## DB
 
 DB contains below fields 
-- ID
-- timestamp
-- command
+- shell (type of shell zsh,bash or powershell)
+- command (shell command)
