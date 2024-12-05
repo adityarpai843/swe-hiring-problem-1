@@ -1,8 +1,6 @@
 import os
 import time
-import json
 import requests
-import subprocess
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -44,7 +42,7 @@ class HistoryWatcher:
                         if command:
                             commands.append({
                                 'command': command,
-                                'timestamp': None,
+                                'timestamp': time.time(),  # Use current time for bash
                                 'raw_line': line.strip()
                             })
         except Exception as e:
@@ -57,6 +55,7 @@ class HistoryWatcher:
         try:
             data = {
                 'command': command,
+                'timestamp': timestamp or time.time(),
                 'shell': os.path.basename(os.environ.get('SHELL', ''))
             }
             
@@ -81,7 +80,7 @@ class HistoryWatcher:
                 self.last_position = f.tell()
                 
                 for command in new_commands:
-                    timestamp = None
+                    timestamp = time.time()
                     if 'zsh' in self.history_file:
                         if ': ' in command:
                             parts = command.split(';')
@@ -101,7 +100,7 @@ class HistoryWatcher:
         return ' '.join(command.split())
 
     def restore_history(self):
-        """Restore history from API using diff approach."""
+        """Restore history from API using unified approach for both shells."""
         try:
             # Get all commands from API
             response = requests.get(
@@ -134,26 +133,30 @@ class HistoryWatcher:
                 print("No new commands to restore")
                 return
 
-            shell = os.path.basename(os.environ.get('SHELL', ''))
-            
-            # Append new commands to history file
+            # Backup existing history file
+            backup_file = f"{self.history_file}.backup"
+            os.system(f"cp {self.history_file} {backup_file}")
+
+            # Write all commands to history file
             with open(self.history_file, 'a', encoding='utf-8') as f:
                 for cmd in new_commands:
-                    if 'zsh' in shell:
+                    if 'zsh' in self.history_file:
                         # Format for zsh history
-                        timestamp = int(float(cmd['timestamp']))
+                        timestamp = int(float(cmd.get('timestamp', time.time())))
                         f.write(f": {timestamp}:0;{cmd['command']}\n")
                     else:
                         # Format for bash history
                         f.write(f"{cmd['command']}\n")
             
-            # Reload shell history
+            # Force reload of shell history
+            shell = os.path.basename(os.environ.get('SHELL', ''))
             if 'zsh' in shell:
-                subprocess.run(['fc', '-R', self.history_file])
+                os.system("fc -R")
             else:
-                subprocess.run(['history', '-r'])
+                os.system("history -r")
             
             print(f"Restored {len(new_commands)} new commands to history")
+            print(f"Backup created at {backup_file}")
             
         except Exception as e:
             print(f"Error restoring history: {str(e)}")
@@ -169,7 +172,7 @@ class HistoryEventHandler(FileSystemEventHandler):
 
 def main():
     # Configure your API endpoint
-    API_ENDPOINT = "http://localhost:3000"
+    API_ENDPOINT = os.environ.get('API_URL', '')
     
     # Initialize the watcher
     watcher = HistoryWatcher(API_ENDPOINT)
