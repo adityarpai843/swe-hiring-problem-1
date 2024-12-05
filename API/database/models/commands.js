@@ -14,7 +14,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   commands.init({
-    command: DataTypes.STRING
+    command: DataTypes.STRING,
+    shell: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'commands',
