@@ -55,7 +55,6 @@ class HistoryWatcher:
         try:
             data = {
                 'command': command,
-                'timestamp': timestamp or time.time(),
                 'shell': os.path.basename(os.environ.get('SHELL', ''))
             }
             
@@ -65,8 +64,10 @@ class HistoryWatcher:
                 headers={'Content-Type': 'application/json'}
             )
             
-            if response.status_code != 201:
-                print(f"Failed to send command to API: {response.status_code}")
+            if response.status_code == 201:
+                print(f"Command sent to API: {command}")
+            else:
+                print(f"Failed to send command to API: {response.status_code}")    
                 
         except Exception as e:
             print(f"Error sending command to API: {str(e)}")
