@@ -36,6 +36,12 @@ Built based on doc prepared by interns
 2. An additional API GETS all commands.
   `curl -X GET http://localhost:8080/api/v1/commands`  
 
+## Techstack
+
+1. Python for cli tool
+2. Nodejs,expressjs,Sequelize ORM for Backend API's
+3. Postgresql as DB.
+
 
 ## DB
 
