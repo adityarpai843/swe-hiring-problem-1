@@ -1,6 +1,18 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: syncli
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   node-api:
     build:
       context: ./API
@@ -17,6 +29,7 @@ services:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/syncli
     depends_on:
       - postgres
+    restart: on-failure  
 
   cli-bash:
     build:
@@ -41,18 +54,6 @@ services:
       API_URL: http://node-api:3000
     volumes:
       - cli_zsh_data:/app
-
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: syncli
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   cli_bash_data:
