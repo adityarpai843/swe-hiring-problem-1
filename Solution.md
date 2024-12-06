@@ -6,11 +6,11 @@
 
 3. Ideal solution would be to have support sign in using google and save sqlite.db and sync across sign in's. This makes us not needing take care of webserver on our own.
 
-
 4. CLI Tool internals
 - Detect terminal (if linux/mac show linux terminal commands else powershell)
-- Upon start append history if there is history newer than current history.Performs diff to know whether anything new is present.
-- The history is pushed when a terminal session is ended as terminal writes to corresponding history files when a session is ended.
+
+- When the program is started history append takes place. if there is history newer than current history then history entry is appended to local system.
+
 
 ## Components in Solution
 
@@ -24,9 +24,7 @@
 
 2. Push to DB takes place if there is are changes in corresponding history files `.zsh_history` and `.bash_history`. This is done using a python package called watcher.
 
-3. The history is pushed when a terminal session is ended as terminal writes to corresponding history files when a session is ended.
-
-4. History restore takes place when tool is run. It only restores 
+4. History restore takes place when tool is run. It only restores the command which is not present in system through simple comparison.
  
 
 ## REST API
