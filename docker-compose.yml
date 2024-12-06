@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: syncli
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  node-api:
+    build:
+      context: ./API
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: syncli
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/syncli
+    depends_on:
+      - postgres
+    restart: on-failure  
+
+  cli-bash:
+    build:
+      context: ./syncli-bash
+      dockerfile: Dockerfile
+    container_name: cli-bash
+    stdin_open: true
+    tty: true
+    environment:
+      API_URL: http://node-api:3000
+    volumes:
+      - cli_bash_data:/app
+
+  cli-zsh:
+    build:
+      context: ./syncli-zsh
+      dockerfile: Dockerfile
+    container_name: cli-zsh
+    stdin_open: true
+    tty: true
+    environment:
+      API_URL: http://node-api:3000
+    volumes:
+      - cli_zsh_data:/app
+
+volumes:
+  cli_bash_data:
+  cli_zsh_data:
+  postgres_data:
